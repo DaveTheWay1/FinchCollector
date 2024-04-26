@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col s6">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">{{ finch.breed }}</span>
+            </div>
+            <div class="card-action">
+                <a href="{% url 'finches_update' finch.id %}">Edit</a>
+                <a href="{% url 'finches_delete' finch.id %}">Delete</a>
+            </div>
+        </div>
+    </div>
+    <div class="col s6">
+        <form action="{% url 'add_feeding' finch.id %}" method="POST">
+            {% csrf_token %}
+            {{ feeding_form.as_p }}
+            <input type="submit" value="Add Feeding" class="btn blue">
+        </form>
+        <table class="striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Meal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for feeding in finch.feeding_set.all %}
+                <tr>
+                    <td>{{feeding.date}}</td>
+                    <td>{{feeding.get_meal_display}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s6">
+        <h3>{{ finch.breed }}'s Toys</h3>
+        {% if finch.toys.count %}
+        {% for toy in finch.toys.all  %}
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">
+                A <span class="{{ toy.color.lower }}-text" >{{ toy.color }}</span> {{ toy.name }}
+                </span>
+            </div>
+            <div class="card-action">
+                <form action="{% url 'unassoc_toy' finch.id toy.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="submit" value="Remove" class="btn red">
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <h5>Sorry, {{finch.name}} has no toys yet 😿 </h5>
+        {% endif %}
+    </div>
+    <div class="col s6">
+        <h3>Available Toys</h3>
+        {% for toy in toys %}
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">
+                A <span class="{{toy.color.lower}}-text">{{ toy.color }}</span> {{ toy.name }}
+                </span>
+            </div>
+            <div class="card-action">
+                <form action="{% url 'assoc_toy' finch.id toy.id %}" method="POST">
+                {% csrf_token %}
+                    <input type="submit" value="Add Toy" class="btn green">
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // cashed element references
+    // date picker
+    const dateEl = document. getElementById('id_date');
+    // select element
+    const selectEl = document.getElementById('id_meal');
+    // Materialize utility functions
+    M.Datepicker.init(dateEl, {
+        format: 'yyyy-mm-dd',
+        defaultDate: new Date(),
+        setDefaultDate: true,
+        autoClose:true
+    });
+
+    M.FormSelect.init(selectEl);
+</script>
+{% endblock %}
